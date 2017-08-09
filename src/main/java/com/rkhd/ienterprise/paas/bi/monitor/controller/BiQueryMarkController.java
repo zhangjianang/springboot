@@ -23,4 +23,10 @@ public class BiQueryMarkController {
         List<BIQueryMark> all = biQueryMarkService.getAll();
         return all;
     }
+
+    @GetMapping(value = "group")
+    public void getGroupByErrorID(){
+        List groupByErrorID = biQueryMarkService.getGroupByErrorID();
+        System.out.println(groupByErrorID);
+    }
 }

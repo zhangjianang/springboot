@@ -20,4 +20,8 @@ public class BiQueryMarkService {
         List<BIQueryMark> all = bIQueryMarkRepository.findAll();
         return all;
     }
+
+    public List getGroupByErrorID(){
+       return  bIQueryMarkRepository.getGroupByErrorID();
+    }
 }
