@@ -1,11 +1,9 @@
 package com.rkhd.ienterprise.paas.bi.monitor.controller;
 
-import com.rkhd.ienterprise.paas.bi.monitor.domain.BIQueryMark;
-import com.rkhd.ienterprise.paas.bi.monitor.repository.BIQueryMarkRepository;
+import com.rkhd.ienterprise.paas.bi.monitor.service.ExecutionJobService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.support.StringMultipartFileEditor;
 
 import java.util.*;
 
@@ -15,9 +13,15 @@ import java.util.*;
 @Controller
 public class HelloController {
 
-
     @Autowired
-    private BIQueryMarkRepository bIQueryMarkRepository;
+    ExecutionJobService executionJobService;
+
+    @RequestMapping("/exec")
+    @ResponseBody
+    public List getExec(){
+        return executionJobService.getGroupByStatus();
+    }
+
 
     @RequestMapping("/hello")
     @ResponseBody
