@@ -1,4 +1,4 @@
-package com.example;
+package com.rkhd.ienterprise.paas.bi.monitor;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
