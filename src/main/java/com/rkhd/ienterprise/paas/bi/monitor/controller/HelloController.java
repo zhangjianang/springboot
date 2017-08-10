@@ -16,14 +16,14 @@ public class HelloController {
     @Autowired
     ExecutionJobService executionJobService;
 
-    @RequestMapping("/exec")
+    @RequestMapping("/pie")
     @ResponseBody
     public List getExec(){
         return executionJobService.getGroupByStatus();
     }
 
 
-    @RequestMapping("/hello")
+    @RequestMapping("/line")
     @ResponseBody
     public List<Map<String,Object>> hello(String name,String city){
         System.out.println(name+"--"+city);

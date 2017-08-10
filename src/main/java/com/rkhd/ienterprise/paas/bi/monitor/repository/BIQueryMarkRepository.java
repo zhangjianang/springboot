@@ -1,6 +1,7 @@
 package com.rkhd.ienterprise.paas.bi.monitor.repository;
 
-import com.rkhd.ienterprise.paas.bi.monitor.domain.BIQueryMark;
+
+import com.rkhd.ienterprise.paas.bi.monitor.domain.bi.BIQueryMark;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
