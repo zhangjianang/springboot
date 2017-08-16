@@ -10,6 +10,9 @@ import java.util.Date;
  */
 public class TimeTool {
 
+    public static Integer[] hours = new Integer[] {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14
+            ,15,16,17,18,19,20,21,22,23};
+
     private static final String dateFormat = "yyyy-MM-dd HH:mm:ss";
     @SuppressWarnings("rawtypes")
     private static ThreadLocal threadLocal = new ThreadLocal() {

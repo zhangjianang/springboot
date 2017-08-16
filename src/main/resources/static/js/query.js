@@ -3,25 +3,350 @@
  */
 
 $(document).ready(function(){
- 
+
+    $('#dd').calendar({
+        trigger: '#dt',
+        zIndex: 999,
+        format: 'yyyy-mm-dd',
+        onSelected: function (view, date, data) {
+            console.log('event: onSelected')
+        },
+        onClose: function (view, date, data) {
+            console.log('event: onClose')
+            console.log('view:' + view)
+            console.log('date:' + date)
+            console.log('data:' + (data || 'None'));
+        }
+    });
+
+
+    $('#asubmit').click(function () {
+
+
+        var request = {
+            day: $('#dt').val(),
+            tenantid: $('#tenantid').val()
+        };
+
+        var requestJson = JSON.stringify(request);
+        queryShow(encodeURI(requestJson));
+
+    });
 });
 
+
+function queryShow(data){
+    setQueryCountByHour("containerLine", "/queryCountByHour",data);
+    setQueryByTenantIDByDay("containerBar", "/queryByTenantIDByDay",data);
+    setQueryStateCount("containerPie", "/queryStateCount",data);
+    setQueryCacheState("containerPie2", "/queryCacheState",data);
+}
 
 
 function getData(data,url){
     var result;
     $.ajax({
-        type: "post",
-        url: url,
-        data: data,
+        type: "get",
+        url: url+"?data="+data,
+        data: "",
         async:false,
         contentType: "application/x-www-form-urlencoded;charset:utf-8",
+        //contentType: "application/json;charset:utf-8",
         success: function (data) {
             result = data;
         }
     });
     return result;
 }
+
+
+function setQueryCacheState(container, path,request) {
+
+    var pieData=getData(request,path);
+
+    var colors = Highcharts.getOptions().colors,
+        categories = ['不刷新', '强行刷新'],
+        data = [{
+            y: pieData.data[0],
+            color: colors[0],
+            drilldown: {
+                name: 'IE 版本',
+                categories: ['使用缓存', '未使用缓存'],
+                data: [pieData.data[1], pieData.data[2]],
+                color: colors[0]
+            }
+        }, {
+            y: pieData.data[3],
+            color: colors[1],
+            drilldown: {
+                name: 'Firefox 版本',
+                categories: ['不适用缓存'],
+                data: [pieData.data[3]],
+                color: colors[1]
+            }
+        }],
+        browserData = [],
+        versionsData = [],
+        i,
+        j,
+        dataLen = data.length,
+        drillDataLen,
+        brightness;
+// Build the data arrays
+    for (i = 0; i < dataLen; i += 1) {
+        // add browser data
+        browserData.push({
+            name: categories[i],
+            y: data[i].y,
+            color: data[i].color
+        });
+        // add version data
+        drillDataLen = data[i].drilldown.data.length;
+        for (j = 0; j < drillDataLen; j += 1) {
+            brightness = 0.2 - (j / drillDataLen) / 5;
+            versionsData.push({
+                name: data[i].drilldown.categories[j],
+                y: data[i].drilldown.data[j],
+                color: Highcharts.Color(data[i].color).brighten(brightness).get()
+            });
+        }
+    }
+// Create the chart
+    Highcharts.chart(container, {
+        chart: {
+            type: 'pie'
+        },
+        title: {
+            text: pieData.day+'查询缓存使用情况'
+        },
+        subtitle: {
+            text: '内环为是否刷新，外环为具体缓存的使用情况'
+        },
+        yAxis: {
+            title: {
+                text: '查询缓存使用比率'
+            }
+        },
+        exporting:{
+            enabled:false
+        },
+        credits: {
+            enabled: false
+        },
+        plotOptions: {
+            pie: {
+                shadow: false,
+                center: ['50%', '50%']
+            }
+        },
+        tooltip: {
+            valueSuffix: '%'
+        },
+        series: [{
+            name: '刷新情况',
+            data: browserData,
+            size: '60%',
+            dataLabels: {
+                formatter: function () {
+                    return this.y > 5 ? this.point.name : null;
+                },
+                color: '#ffffff',
+                distance: -30
+            }
+        }, {
+            name: '缓存使用',
+            data: versionsData,
+            size: '80%',
+            innerSize: '60%',
+            dataLabels: {
+                formatter: function () {
+                    // display only if larger than 1
+                    return this.y > 1 ? '<b>' + this.point.name + ':</b> ' +
+                        this.y + '%' : null;
+                }
+            },
+            id: 'versions'
+        }],
+        responsive: {
+            rules: [{
+                condition: {
+                    maxWidth: 400
+                },
+                chartOptions: {
+                    series: [{
+                        id: 'versions',
+                        dataLabels: {
+                            enabled: false
+                        }
+                    }]
+                }
+            }]
+        }
+    });
+}
+
+
+
+function setQueryByTenantIDByDay(container, path,request){
+    var pieData=getData(request,path);
+    Highcharts.chart(container, {
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: pieData.day+'租户查询情况'
+        },
+        xAxis: {
+            type: 'category',
+            labels: {
+                rotation: -270,
+                style: {
+                    fontSize: '13px',
+                    fontFamily: 'Verdana, sans-serif'
+                }
+            }
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: '查询量'
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            pointFormat: '查询量: <b>{point.y} 次</b>'
+        },
+        exporting:{
+            enabled:false
+        },
+        credits: {
+            enabled: false
+        },
+        series: [{
+            name: '查询次数',
+            data:pieData.data,
+            dataLabels: {
+                enabled: true,
+                rotation: -90,
+                color: '#FFFFFF',
+                align: 'right',
+                format: '{point.y}', // one decimal
+                y: 10, // 10 pixels down from the top
+                style: {
+                    fontSize: '13px',
+                    fontFamily: 'Verdana, sans-serif'
+                }
+            }
+        }]
+    });
+}
+
+
+function setQueryCountByHour(container, path, request){
+   
+    var pieData=getData(request,path);
+    Highcharts.chart(container, {
+        title: {
+            text: pieData.day+'查询统计',
+            x: -20
+        },
+        xAxis: {
+            categories: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11','12', '13', '14', '15','16', '17', '18', '19', '20', '21', '22', '23']
+        },
+        yAxis: {
+            title: {
+                text: '查询量'
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        exporting:{
+            enabled:false
+        },
+        credits: {
+            enabled: false
+        },
+        tooltip: {
+            valueSuffix: '次'
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle',
+            borderWidth: 0
+        },
+        series: [{
+            name: '查询总量',
+            data: pieData.allData
+        }, {
+            name: 'DW查询量',
+            data: pieData.queryData
+        },{
+            name: '查询失败量',
+            data: pieData.errorData
+        }]
+    });
+
+
+}
+
+
+function setQueryStateCount(container, path,request){
+
+    var pieData=getData(request,path);
+    Highcharts.chart(container, {
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false
+        },
+        title: {
+            text: pieData.day+'错误类型分析'
+        },
+        tooltip: {
+            headerFormat: '{series.name}<br>',
+            pointFormat: '{point.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        exporting:{
+            enabled:false
+        },
+        credits: {
+            enabled: false
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                depth: 35,
+                dataLabels: {
+                    color:'black',
+                    enabled: true,
+                    formatter:function(){
+                        return '<b>'+this.point.name+'</b>:'+this.point.percentage.toFixed(2)+"%";
+                    },
+                    connectorWidth:0,
+                    connectorPadding:0,
+                    distance:-30
+                },
+                showInLegend: true
+            }
+        },
+        series: [{
+            type: 'pie',
+            name: '错误类型占比',
+            data: pieData.data
+
+        }]
+    });
+
+}
+
+
 
 function setPie( container, path) {
     var pieData=getData("",path);

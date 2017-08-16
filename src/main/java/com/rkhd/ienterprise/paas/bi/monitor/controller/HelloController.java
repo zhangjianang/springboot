@@ -51,5 +51,11 @@ public class HelloController {
 
 
 
+    @RequestMapping(value="/query",method= RequestMethod.GET)
+    public String query(){
+        return "querymark";
+    }
+
+
 
 }
