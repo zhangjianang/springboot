@@ -22,17 +22,32 @@ $(document).ready(function(){
 
     $('#asubmit').click(function () {
 
+        var request = {
+            day: $('#dt').val(),
+            tenantid: $('#tenantid').val()
+        };
+        var requestJson = JSON.stringify(request);
+        queryShow(encodeURI(requestJson));
+    });
+
+    $('#angsubmit').click(function () {
 
         var request = {
             day: $('#dt').val(),
             tenantid: $('#tenantid').val()
         };
-
         var requestJson = JSON.stringify(request);
-        queryShow(encodeURI(requestJson));
-
+        timingShow(encodeURI(requestJson));
     });
+
 });
+
+function timingShow(data) {
+    setPie("containerPie", "/pie",data);
+    setPie("containerPie2", "/pie",data);
+    setLine("containerLine","/nextExec",data);
+    setColumn("containerColumn","/column",data);
+}
 
 
 function queryShow(data){
@@ -486,8 +501,8 @@ function setQueryStateCount(container, path,request){
 
 
 
-function setPie( container, path) {
-    var pieData=getData("",path);
+function setPie( container, path ,data) {
+    var pieData=getData(data,path);
     Highcharts.chart(container, {
         chart: {
             plotBackgroundColor: null,
@@ -496,7 +511,7 @@ function setPie( container, path) {
             type: 'pie'
         },
         title: {
-            text: 'Browser market shares January, 2015 to May, 2015'
+            text: '定时执行成功失败比例'
         },
         tooltip: {
             pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
@@ -518,15 +533,15 @@ function setPie( container, path) {
     });
 }
 
-function setLine(container,path){
-    var dataStr=getData("",path);
+function setLine(container,path,data){
+    var dataStr=getData(data,path);
      Highcharts.chart(container, {
         title: {
-            text: '不同城市的月平均气温',
+            text: '下次执行时间',
             x: -20
         },
         subtitle: {
-            text: '数据来源: WorldClimate.com',
+            text: '数据来源: azkaban_trigger',
             x: -20
         },
         xAxis: {
@@ -534,7 +549,7 @@ function setLine(container,path){
         },
         yAxis: {
             title: {
-                text: '温度 (°C)'
+                text: '个数'
             },
             plotLines: [{
                 value: 0,
@@ -555,7 +570,7 @@ function setLine(container,path){
     });
 }
 
-function setColumn(container,path) {
+function setColumn(container,path,data) {
     Highcharts.chart(container, {
         chart: {
             type: 'column'
@@ -566,6 +581,12 @@ function setColumn(container,path) {
         subtitle: {
             text: 'Source: WorldClimate.com'
         },
+        exporting:{
+        enabled:false
+        },
+    credits: {
+        enabled: false
+    },
         xAxis: {
             categories: [
                 'Jan',

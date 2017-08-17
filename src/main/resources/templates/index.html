@@ -7,20 +7,31 @@
     <script src="/js/exporting.js" type="text/javascript"></script>
     <script src="/js/highcharts-zh_CN.js" type="text/javascript"></script>
     <script src="/js/jquery-1.8.3.min.js" type="text/javascript"></script>
-
     <script src="/js/query.js" type="text/javascript"></script>
+    <script src="/js/calendar.js"></script>
 
+    <link rel="stylesheet" type="text/css" href="/css/calendar.css"/>
+    <link rel="stylesheet" type="text/css" href="/css/time.css"/>
     <script type="text/javascript">
         $(document).ready(function() {
-            setPie("containerPie", "/pie");
-            setPie("containerPie2", "/pie");
-            setLine("containerLine","/line")
-            setColumn("containerColumn","/column")
+            timingShow();
         });
     </script>
+
 </head>
 <body>
-<h1>this is monitor</h1>
+<div style="width:auto;height: 70px">
+    <div style="height: 70px; width: 600px; margin: 0 auto;float:right">
+        <form id="form1">
+            <table>
+                <tr><td>时间:<input type="text" id="dt" placeholder="请输入"/>
+                    <div id="dd"></div></td>
+                    <td>租户:<input type="text" id="tenantid" style=" height: 28px; border: 1px solid #ccc; outline: none;"/></td>
+                    <td><input type="button" value="提交" id ="angsubmit"/></td></tr>
+            </table>
+        </form>
+    </div>
+</div>
 
 <div style="width:auto;height: 400px">
     <div id="containerLine" style="min-width: 310px; height: 400px; width: 50%; margin: 0 auto;float:left"></div>

@@ -11,27 +11,28 @@ import java.util.*;
  * Created by ang on 2017/8/8.
  */
 @Controller
-public class HelloController {
+public class TimingController {
 
     @Autowired
     ExecutionJobService executionJobService;
 
     @RequestMapping("/pie")
     @ResponseBody
-    public List getExec(){
+    public List getExec(String data){
+        System.out.println(data);
         return executionJobService.getGroupByStatus();
     }
 
 
-    @RequestMapping("/line")
+    @RequestMapping("/nextExec")
     @ResponseBody
-    public List<Map<String,Object>> hello(String name,String city){
-        System.out.println(name+"--"+city);
+    public List<Map<String,Object>> hello(String data){
+        System.out.println(data);
 
         Map<String,Object> resMap = new HashMap<>();
-        Double[] data = new Double[]{-0.2, 0.8, 5.7, 11.3, 17.0, 22.0, 24.8, 24.1, 20.1, 14.1, 8.6, 2.5};
+        Double[] data1 = new Double[]{-0.2, 0.8, 5.7, 11.3, 17.0, 22.0, 24.8, 24.1, 20.1, 14.1, 8.6, 2.5};
         resMap.put("name","东京");
-        resMap.put("data",data);
+        resMap.put("data",data1);
 
 
         List<Map<String,Object>> resList = new ArrayList<>();
