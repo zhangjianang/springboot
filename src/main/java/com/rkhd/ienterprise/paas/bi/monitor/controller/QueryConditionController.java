@@ -26,20 +26,13 @@ public class QueryConditionController {
     }
 
 
-  /*  @GetMapping(value = "queryCountByHour")
-    public Map<String, Object> queryCountByHour(@RequestParam(value="day" ,required = false) String day,
-                                        @RequestParam(value="tenantid",required = false) String tenantid){
-        Map<String, Object> returnMap = queryConditionService.getQueryCountByDayAndTenantID(day, tenantid != null && tenantid.length() > 0 ? Long.parseLong(tenantid) : 0);
-        return returnMap;
-    }*/
-
-
     @GetMapping(value = "queryCountByHour")
     public Map<String, Object> queryCountByHour(@RequestParam(value="data" ,required = false) String data){
 
         String[] params = getParam(data);
         String day = params[0];
         String tenantid = params[1];
+
         Map<String, Object> returnMap = queryConditionService.getQueryCountByDayAndTenantID(day, tenantid != null && tenantid.length() > 0 ? Long.parseLong(tenantid) : 0);
         return returnMap;
     }
@@ -88,6 +81,15 @@ public class QueryConditionController {
         String day = params[0];
         String tenantid = params[1];
         Map<String, Object> returnMap = queryConditionService.getQueryCacheStateByDayAndTenantID(day, tenantid != null && tenantid.length() > 0 ? Long.parseLong(tenantid) : 0);
+        return returnMap;
+    }
+
+    @GetMapping(value = "queryTypeState")
+    public Map<String, Object> queryTypeState(@RequestParam(value="data" ,required = false) String data){
+        String[] params = getParam(data);
+        String day = params[0];
+        String tenantid = params[1];
+        Map<String, Object> returnMap = queryConditionService.getQueryTypeStateByDayAndTenantID(day, tenantid != null && tenantid.length() > 0 ? Long.parseLong(tenantid) : 0);
         return returnMap;
     }
 

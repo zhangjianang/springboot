@@ -40,6 +40,7 @@ function queryShow(data){
     setQueryByTenantIDByDay("containerBar", "/queryByTenantIDByDay",data);
     setQueryStateCount("containerPie", "/queryStateCount",data);
     setQueryCacheState("containerPie2", "/queryCacheState",data);
+    setQueryTypeState("containerPie3", "/queryTypeState",data);
 }
 
 
@@ -60,6 +61,117 @@ function getData(data,url){
 }
 
 
+
+function setQueryTypeState(container, path,request) {
+
+    var pieData=getData(request,path);
+
+    var colors = Highcharts.getOptions().colors,
+        categories = ['内存缓存', '定时缓存', '仓库查询'],
+        data = [{
+            y: pieData.data[0],
+            color: colors[0],
+            drilldown: {
+                name: '内存缓存',
+                categories: ['内存缓存'],
+                data: [pieData.data[0]],
+                color: colors[0]
+            }
+        }, {
+            y:pieData.data[1],
+            color: colors[1],
+            drilldown: {
+                name: '定时缓存',
+                categories: ['定时缓存'],
+                data: [pieData.data[1]],
+                color: colors[1]
+            }
+        }, {
+            y: pieData.data[2],
+            color: colors[2],
+            drilldown: {
+                name: '仓库查询',
+                categories: ['视图查询', '看板查询', 'SQL查询', '定时查询'],
+                data: [pieData.data[3],pieData.data[4],pieData.data[5], pieData.data[6]],
+                color: colors[2]
+            }
+        }],
+        browserData = [],
+        versionsData = [],
+        i,
+        j,
+        dataLen = data.length,
+        drillDataLen,
+        brightness;
+// 构建数据数组
+    for (i = 0; i < dataLen; i += 1) {
+        // 添加浏览器数据
+        browserData.push({
+            name: categories[i],
+            y: data[i].y,
+            color: data[i].color
+        });
+        // 添加版本数据
+        drillDataLen = data[i].drilldown.data.length;
+        for (j = 0; j < drillDataLen; j += 1) {
+            brightness = 0.2 - (j / drillDataLen) / 5;
+            versionsData.push({
+                name: data[i].drilldown.categories[j],
+                y: data[i].drilldown.data[j],
+                color: Highcharts.Color(data[i].color).brighten(brightness).get()
+            });
+        }
+    }
+// 创建图表
+    Highcharts.chart(container, {
+        chart: {
+            type: 'pie'
+        },
+        title: {
+            text: pieData.day+'查询分析'
+        },
+        yAxis: {
+            title: {
+                text: '查询分析'
+            }
+        },
+        plotOptions: {
+            pie: {
+                shadow: false,
+                center: ['50%', '50%']
+            }
+        },
+        tooltip: {
+            valueSuffix: '%'
+        },
+        series: [{
+            name: '查询方式',
+            data: browserData,
+            size: '60%',
+            dataLabels: {
+                formatter: function () {
+                    return this.y > 5 ? this.point.name : null;
+                },
+                color: 'white',
+                distance: -30
+            }
+        }, {
+            name: '查询类别',
+            data: versionsData,
+            size: '80%',
+            innerSize: '60%',
+            dataLabels: {
+                formatter: function () {
+                    // 大于1则显示
+                    return this.y > 1 ? '<b>' + this.point.name + ':</b> ' + this.y + '%'  : null;
+                }
+            }
+        }]
+    });
+
+}
+
+
 function setQueryCacheState(container, path,request) {
 
     var pieData=getData(request,path);
@@ -70,7 +182,7 @@ function setQueryCacheState(container, path,request) {
             y: pieData.data[0],
             color: colors[0],
             drilldown: {
-                name: 'IE 版本',
+                name: '不刷新',
                 categories: ['使用缓存', '未使用缓存'],
                 data: [pieData.data[1], pieData.data[2]],
                 color: colors[0]
@@ -79,7 +191,7 @@ function setQueryCacheState(container, path,request) {
             y: pieData.data[3],
             color: colors[1],
             drilldown: {
-                name: 'Firefox 版本',
+                name: '强行刷新',
                 categories: ['不适用缓存'],
                 data: [pieData.data[3]],
                 color: colors[1]
@@ -118,9 +230,6 @@ function setQueryCacheState(container, path,request) {
         },
         title: {
             text: pieData.day+'查询缓存使用情况'
-        },
-        subtitle: {
-            text: '内环为是否刷新，外环为具体缓存的使用情况'
         },
         yAxis: {
             title: {
@@ -247,6 +356,7 @@ function setQueryByTenantIDByDay(container, path,request){
 function setQueryCountByHour(container, path, request){
    
     var pieData=getData(request,path);
+
     Highcharts.chart(container, {
         title: {
             text: pieData.day+'查询统计',
@@ -255,7 +365,7 @@ function setQueryCountByHour(container, path, request){
         xAxis: {
             categories: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11','12', '13', '14', '15','16', '17', '18', '19', '20', '21', '22', '23']
         },
-        yAxis: {
+        yAxis: [{
             title: {
                 text: '查询量'
             },
@@ -265,14 +375,23 @@ function setQueryCountByHour(container, path, request){
                 color: '#808080'
             }]
         },
+            {
+                title: {
+                    text: '耗时'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#4572A7'
+                }],
+                opposite: true
+            }
+        ],
         exporting:{
             enabled:false
         },
         credits: {
             enabled: false
-        },
-        tooltip: {
-            valueSuffix: '次'
         },
         legend: {
             layout: 'vertical',
@@ -280,16 +399,35 @@ function setQueryCountByHour(container, path, request){
             verticalAlign: 'middle',
             borderWidth: 0
         },
-        series: [{
-            name: '查询总量',
-            data: pieData.allData
-        }, {
-            name: 'DW查询量',
-            data: pieData.queryData
-        },{
-            name: '查询失败量',
-            data: pieData.errorData
-        }]
+        series: [
+            {
+                type: 'column',
+                name: '查询耗时',
+                yAxis: 1,
+                tooltip: {
+                    valueSuffix: '毫秒'
+                },
+                data: pieData.elapsed
+            },
+            {
+                name: '查询总量',
+                tooltip: {
+                    valueSuffix: '次'
+                },
+                data: pieData.allData
+            }, {
+                name: 'DW查询量',
+                tooltip: {
+                    valueSuffix: '次'
+                },
+                data: pieData.queryData
+            },{
+                name: '查询失败量',
+                tooltip: {
+                    valueSuffix: '次'
+                },
+                data: pieData.errorData
+            }]
     });
 
 

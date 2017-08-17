@@ -90,6 +90,19 @@ public class QueryConditionService {
         List<Object> errorCompletionData = completionData(errorData);
         returnMap.put("errorData",errorCompletionData.toArray());
 
+
+
+        List<Object[]> elapsedData = null;
+        if(tenantid>0){
+            elapsedData = queryConditionRepository.getElapsedCountByHourAndTenantID(startTime,endTime,tenantid);
+        }else{
+            elapsedData = queryConditionRepository.getElapsedCountByHour(startTime,endTime);
+        }
+
+        List<Object> elapsedCompletionData = completionData(elapsedData);
+        returnMap.put("elapsed",elapsedCompletionData.toArray());
+
+
         return returnMap;
     }
 
@@ -200,12 +213,8 @@ public class QueryConditionService {
         }
 
 
-
         Object[] oo = prossCacheStateData(objects);
-
-
         returnMap.put("data",oo);
-
 
         return returnMap;
     }
@@ -233,9 +242,7 @@ public class QueryConditionService {
             }else{
                 no_refresh_use_cache = queryCount;
             }
-
             count += queryCount;
-
         }
 
         BigDecimal noRefreshAllPercent = new BigDecimal(0);
@@ -259,5 +266,108 @@ public class QueryConditionService {
 
         return returnObject;
 
+    }
+
+    public Map<String,Object> getQueryTypeStateByDayAndTenantID(String day, long tenantid) {
+        Long times[] = returnTime(day);
+        Map<String,Object> returnMap = new HashMap<String,Object>();
+        long startTime = times[0];
+        long endTime = times[1];
+
+        returnMap.put("day",getDateFormat().format(new Date(startTime)));
+        List<Object[]> objects = null;
+        if(tenantid>0){
+            objects = queryConditionRepository.getQueryTypeStateByDayAndTenantID(startTime,endTime,tenantid);
+        }else{
+            objects = queryConditionRepository.getQueryTypeStateByDay(startTime,endTime);
+        }
+
+
+        Object[] oo = prossQueryTypeData(objects);
+        returnMap.put("data",oo);
+
+        return returnMap;
+    }
+
+    private Object[] prossQueryTypeData(List<Object[]> objects) {
+        //IS_USE_CACHE,IS_USE_DW,IS_USE_TIMING,QUERY_TYPE,COUNT(*)
+
+
+        int useCache = 0;
+        int useTiming =0;
+        int useDw = 0;
+        int dwViewQuery = 0;
+        int dwBoardQuery = 0;
+        int dwSQLQuery = 0;
+        int dwTimingQuery =0;
+
+        int count = 0;
+
+
+        for(Object[] o : objects){
+
+            int is_use_cache = Integer.parseInt(o[0].toString());
+            int is_use_timing= Integer.parseInt(o[2].toString());
+            int is_use_dw= Integer.parseInt(o[1].toString());
+            int queryType= Integer.parseInt(o[3].toString());
+            int queryCount = Integer.parseInt(o[4].toString());
+
+            if(is_use_cache==1){
+                useCache += queryCount;
+            }else if(is_use_timing==1){
+                useTiming += queryCount;
+            }else if(is_use_dw==1){
+                useDw += queryCount;
+
+                //查询类型 1 直接查询，2 view直接查询，3 看板查询，4 定时查询
+                if(1==queryType){
+                    dwSQLQuery += queryCount;
+                }else if(2==queryType){
+                    dwViewQuery += queryCount;
+                }else if(3==queryType){
+                    dwBoardQuery +=queryCount;
+                }else if(4==queryType){
+                    dwTimingQuery +=queryCount;
+                }
+            }
+            count += queryCount;
+        }
+
+        BigDecimal useCachePercent = new BigDecimal(0);
+        BigDecimal useTimingCachePercent = new BigDecimal(0);
+        BigDecimal useDwPercent = new BigDecimal(0);
+        BigDecimal dwViewQueryPercent = new BigDecimal(0);
+        BigDecimal dwBoardQueryPercent = new BigDecimal(0);
+        BigDecimal dwSQLQueryPercent = new BigDecimal(0);
+        BigDecimal dwTimingQueryPercent = new BigDecimal(0);
+
+        if(count>0){
+            useCachePercent = ArithmeticUtil.div(useCache+"",count+"");
+            useCachePercent = ArithmeticUtil.round(ArithmeticUtil.mul(useCachePercent.toString(),"100").toString(),2);
+            useTimingCachePercent = ArithmeticUtil.div(useTiming+"",count+"");
+            useTimingCachePercent = ArithmeticUtil.round(ArithmeticUtil.mul(useTimingCachePercent.toString(),"100").toString(),2);
+
+
+            useDwPercent = ArithmeticUtil.round(
+                    ArithmeticUtil.sub(
+                            ArithmeticUtil.sub("100" ,useCachePercent.toString()).toString(),useTimingCachePercent.toString()).toString()
+                    ,2);
+
+            dwViewQueryPercent = ArithmeticUtil.div(dwViewQuery+"",count+"");
+            dwViewQueryPercent = ArithmeticUtil.round(ArithmeticUtil.mul(dwViewQueryPercent.toString(),"100").toString(),2);
+
+            dwBoardQueryPercent = ArithmeticUtil.div(dwBoardQuery+"",count+"");
+            dwBoardQueryPercent = ArithmeticUtil.round(ArithmeticUtil.mul(dwBoardQueryPercent.toString(),"100").toString(),2);
+
+            dwSQLQueryPercent = ArithmeticUtil.div(dwSQLQuery+"",count+"");
+            dwSQLQueryPercent = ArithmeticUtil.round(ArithmeticUtil.mul(dwSQLQueryPercent.toString(),"100").toString(),2);
+
+            dwTimingQueryPercent = ArithmeticUtil.div(dwTimingQuery+"",count+"");
+            dwTimingQueryPercent = ArithmeticUtil.round(ArithmeticUtil.mul(dwTimingQueryPercent.toString(),"100").toString(),2);
+
+        }
+
+
+        return new Object[]{useCachePercent,useTimingCachePercent,useDwPercent,dwViewQueryPercent,dwBoardQueryPercent,dwSQLQueryPercent,dwTimingQueryPercent};
     }
 }

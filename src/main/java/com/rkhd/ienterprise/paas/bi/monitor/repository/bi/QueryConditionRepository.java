@@ -187,4 +187,69 @@ public interface QueryConditionRepository extends JpaRepository<QueryCondition, 
             "GROUP BY IS_REFRESH,IS_USE_CACHE",
             nativeQuery = true)
     List<Object[]> getQueryCacheStateByDay(@Param("startTime") long startTime, @Param("endTime") long endTime);
+
+
+    /**
+     * 根据租户和时间 统计所在天该租户每个小时的查询平均耗时
+     * @param startTime
+     * @param endTime
+     * @param tenantid
+     * @return
+     */
+    @Query(value = "SELECT FROM_UNIXTIME( START_TIME/1000, '%k' ) AS hour,ROUND(AVG (ELAPSED_TIME),2)  " +
+            "FROM bi_query_condition " +
+            "WHERE START_TIME>= :startTime AND START_TIME <:endTime AND TENANT_ID = :tenantid " +
+            "GROUP BY FROM_UNIXTIME( START_TIME/1000, '%k' )",
+            nativeQuery = true)
+    List<Object[]> getElapsedCountByHourAndTenantID(@Param("startTime") long startTime, @Param("endTime") long endTime,@Param("tenantid") long tenantid);
+
+
+
+    /**
+     * 根据时间 统计所在天每个小时的查询平均耗时
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    @Query(value = "SELECT FROM_UNIXTIME( START_TIME/1000, '%k' ) AS hour,ROUND(AVG (ELAPSED_TIME),2)  " +
+            "FROM bi_query_condition " +
+            "WHERE START_TIME>= :startTime AND START_TIME <:endTime " +
+            "GROUP BY FROM_UNIXTIME( START_TIME/1000, '%k' )",
+            nativeQuery = true)
+    List<Object[]> getElapsedCountByHour(@Param("startTime") long startTime, @Param("endTime") long endTime);
+
+
+
+
+
+
+    /**
+     * 根据租户和时间 统计所在天该租户各种查询情况
+     * @param startTime
+     * @param endTime
+     * @param tenantid
+     * @return
+     */
+    @Query(value = "SELECT IS_USE_CACHE,IS_USE_DW,IS_USE_TIMING,QUERY_TYPE,COUNT(*)  " +
+            "FROM bi_query_condition " +
+            "WHERE IS_SUCCESS = 1 AND START_TIME>= :startTime AND START_TIME <:endTime AND TENANT_ID = :tenantid " +
+            "GROUP BY IS_USE_CACHE,IS_USE_DW,IS_USE_TIMING,QUERY_TYPE",
+            nativeQuery = true)
+    List<Object[]> getQueryTypeStateByDayAndTenantID(@Param("startTime") long startTime, @Param("endTime") long endTime,@Param("tenantid") long tenantid);
+
+
+
+
+    /**
+     * 根据时间 统计所在天各种查询情况
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    @Query(value = "SELECT IS_USE_CACHE,IS_USE_DW,IS_USE_TIMING,QUERY_TYPE,COUNT(*)  " +
+            "FROM bi_query_condition " +
+            "WHERE IS_SUCCESS = 1 AND START_TIME>= :startTime AND START_TIME <:endTime " +
+            "GROUP BY IS_USE_CACHE,IS_USE_DW,IS_USE_TIMING,QUERY_TYPE",
+            nativeQuery = true)
+    List<Object[]> getQueryTypeStateByDay(@Param("startTime") long startTime, @Param("endTime") long endTime);
 }

@@ -33,6 +33,9 @@ public class QueryCondition {
     //是否使用查询 1 是，0 不是
     private int isUseDw ;
 
+    //是否使用了定时 1 是, 0 不是
+    private int isUseTiming;
+
     //是否为刷新查询 1 是，0不是
     private int isRefresh ;
 
@@ -140,6 +143,16 @@ public class QueryCondition {
 
     public void setIsUseDw(int isUseDw) {
         this.isUseDw = isUseDw;
+    }
+
+
+    @Column(name = "IS_USE_TIMING")
+    public int getIsUseTiming() {
+        return isUseTiming;
+    }
+
+    public void setIsUseTiming(int isUseTiming) {
+        this.isUseTiming = isUseTiming;
     }
 
     @Column(name = "IS_REFRESH")
@@ -261,13 +274,14 @@ public class QueryCondition {
                 ", isSuccess=" + isSuccess +
                 ", isUseCache=" + isUseCache +
                 ", isUseDw=" + isUseDw +
+                ", isUseTiming=" + isUseTiming +
                 ", isRefresh=" + isRefresh +
                 ", isTiming=" + isTiming +
                 ", errorType=" + errorType +
                 ", queryType=" + queryType +
                 ", role='" + role + '\'' +
                 ", execTime=" + execTime +
-                ", sql='" + dwsql + '\'' +
+                ", dwsql='" + dwsql + '\'' +
                 ", sqlMd5='" + sqlMd5 + '\'' +
                 ", tenantID=" + tenantID +
                 ", userID=" + userID +
